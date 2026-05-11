@@ -1,0 +1,5 @@
+
+
+test calendar api
+test gemini api
+test discord api

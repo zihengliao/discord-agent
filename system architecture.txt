@@ -1,0 +1,70 @@
+                         ┌────────────────────┐
+                         │      Discord        │
+                         │  DM / Server Chat   │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+                         ┌────────────────────┐
+                         │   Discord Bot       │
+                         │ discord.py / API    │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+                         ┌────────────────────┐
+                         │  Message Handler    │
+                         │ commands + messages │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+                         ┌────────────────────┐
+                         │ Agent Orchestrator  │
+                         │ decides workflow    │
+                         └─────────┬──────────┘
+                                   │
+                ┌──────────────────┼──────────────────┐
+                ▼                  ▼                  ▼
+      ┌────────────────┐  ┌────────────────┐  ┌────────────────┐
+      │ Memory Store   │  │ Goal/Task DB   │  │ Calendar State │
+      │ preferences    │  │ goals, habits  │  │ events/free    │
+      │ past patterns  │  │ reflections    │  │ blocks         │
+      └────────────────┘  └────────────────┘  └────────────────┘
+                │                  │                  │
+                └──────────────────┼──────────────────┘
+                                   ▼
+                         ┌────────────────────┐
+                         │      LLM API        │
+                         │ Gemini / OpenAI etc │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+                         ┌────────────────────┐
+                         │ Action Planner      │
+                         │ structured JSON     │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+                         ┌────────────────────┐
+                         │ Safety Validator    │
+                         │ rules + permissions │
+                         └─────────┬──────────┘
+                                   │
+                 ┌─────────────────┼─────────────────┐
+                 ▼                 ▼                 ▼
+      ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+      │ Google Calendar │ │ Reminder System │ │ Goal Tracker    │
+      │ read/create     │ │ scheduled jobs  │ │ update progress │
+      └─────────────────┘ └─────────────────┘ └─────────────────┘
+                 │                 │                 │
+                 └─────────────────┼─────────────────┘
+                                   ▼
+                         ┌────────────────────┐
+                         │ Execution Result    │
+                         │ success/fail/needs  │
+                         │ approval            │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+                         ┌────────────────────┐
+                         │ Discord Response    │
+                         │ tell user outcome   │
+                         └────────────────────┘
