@@ -2,38 +2,44 @@ import discord
 import os
 from dotenv import load_dotenv
 from google import genai
+from delegation import Delegator
+from intent_agent import IntentAgent
+import asyncio
+
 
 load_dotenv()
-
 DISCORD_BOT_TOKEN = str(os.getenv("DISCORD_BOT_TOKEN"))
 OWNER_DISCORD_ID = int(os.getenv("OWNER_DISCORD_ID"))
 GEMINI_API_KEY = str(os.getenv("GEMINI_API_KEY"))
 
-with open("personality/obama.md") as file:
-    obama_style_text = file.read()
 
-
-system_prompt = f"""
-You are Barack Obama and you talk like him, act like him, think like him.
-
-You're a role model, an inspiration to me. I look to you for guidance.
-
-Hard constraints:
-- Never claim to be anyone else except Barack Obama.
-
-When possible, keep your responses sharp and succinct. Keep it the length that is appropriate for a discord message.
-
-\n
-"""
-
-
-
+# setting clients up
 intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
 
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+MODEL = "gemini-3.1-flash-lite-preview"
+
+
+# chuck this shit through to the intent agent
+# based on intent chuck it to the new appropriate agent
+# respond back with the appropriate agent
+intent_agent = IntentAgent(gemini_client, MODEL)
+delegator = Delegator()
+def respond(user_message: str) -> str:
+    
+    intent = intent_agent.define_intent(user_message)
+    agent = delegator.delegate(intent)
+
+    response = agent(gemini_client, MODEL).respond(user_message)
+
+    return response
+
+
+
+
 
 @client.event
 async def on_ready():
@@ -46,18 +52,16 @@ async def on_message(message):
     # Stop the bot from replying to itself
     if message.author == client.user:
         return
-    
-    print(type(message.author.id))
 
     # Only respond to you
     if message.author.id != OWNER_DISCORD_ID:
-        print("you're not ziheng")
+        print("you're not Ziheng")
         return
 
     user_message = message.content.strip()
 
     # Print your message in the terminal
-    print(f"You said: {user_message}")
+    print(f"User: {user_message}")
 
     # Optional shutdown command
     if user_message.lower() == "shutdown":
@@ -65,29 +69,12 @@ async def on_message(message):
         await client.close()
         return
 
-    response = gemini_client.models.generate_content(
-    model="gemini-3.1-flash-lite-preview",
-    contents= system_prompt + user_message
-    )
 
-
-    # chuck this shit through to the intent agent
-    # based on intent chuck it to the new appropriate agent
-    # respond back with the personality agent
-
-
-
-
-
-
-
-
-
-
+    response = await asyncio.to_thread(respond, user_message)
 
     
     # Respond back in Discord
-    await message.channel.send(f"{response.text}")
+    await message.channel.send(f"{response}")
 
 
 client.run(DISCORD_BOT_TOKEN)

@@ -2,6 +2,8 @@ from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict, ValidationError
 import json
+from pprint import pprint
+
 """
 The purpose of this agent is to classify the type of message and request being sent.
 
@@ -73,43 +75,67 @@ class IntentAgent:
 
     def define_intent(self, message):
         """
-        Expected Schema return:
-        
-        {
-        "intent": "string",
-        "confidence": 0.0,
-        "needs_calendar": false,
-        "needs_goal_memory": false,
-        "needs_task_memory": false,
-        "needs_operational_memory": false,
-        "needs_conversation_history": false,
-        "updates_goal_memory": false,
-        "updates_task_memory": false,
-        "updates_user_memory": false,
-        "updates_reflection_memory": false,
-        "requires_approval": false,
-        "needs_clarification": false,
-        "clarifying_question": null,
-        "entities": {
-            "task_title": null,
-            "goal_title": null,
-            "date": null,
-            "time_preference": null,
-            "duration_minutes": null,
-            "reminder_text": null,
-            "completed_task": null
-            }
-        }"""
-        
+        Classifies a user message and returns a validated IntentResult.
 
+        Returns
+        -------
+        IntentResult
+            A Pydantic model representing the classified intent.
+
+            On success, this will contain the model's validated classification.
+
+            Example successful return:
+
+                IntentResult(
+                    intent=Intent.SCHEDULE_TASK,
+                    confidence=0.94,
+                    needs_calendar=True,
+                    needs_goal_memory=True,
+                    needs_task_memory=True,
+                    needs_operational_memory=False,
+                    needs_conversation_history=False,
+                    updates_goal_memory=False,
+                    updates_task_memory=False,
+                    updates_user_memory=False,
+                    updates_reflection_memory=False,
+                    requires_approval=True,
+                    needs_clarification=False,
+                    clarifying_question=None,
+                    entities=IntentEntities(
+                        task_title="forecasting",
+                        goal_title=None,
+                        date="tomorrow",
+                        time_preference="morning",
+                        duration_minutes=60,
+                        reminder_text=None,
+                        completed_task=None
+                    )
+                )
+
+            On failure, this will return a fallback result:
+
+                IntentResult(
+                    intent=Intent.UNKNOWN,
+                    confidence=0.0,
+                    needs_clarification=True,
+                    clarifying_question="I couldn't parse the classifier output as JSON.",
+                    entities=IntentEntities()
+                )
+    
+    """
+        
+        #TODO: Need to handle 503 error from models
         response = self.gemini_client.models.generate_content(
-            model="gemini-3.1-flash-lite-preview",
+            model=self.model,
             contents=f"""{self.prompt_intent}
 
         \n {message}"""
         )
 
-        self.validate_schema(response.text)
+        intent_json = self.validate_schema(response.text)
+        pprint(f"Intent JSON {intent_json}")
+
+        return intent_json
 
     def validate_schema(self, raw_model_output: str) -> IntentResult:
         """
