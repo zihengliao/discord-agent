@@ -1,5 +1,45 @@
 
 
-test calendar api
-test gemini api
-test discord api
+You:
+I need to work on my forecasting project tonight
+
+Bot:
+I found you’re free from 7:30–9:00pm tonight.
+
+I’d block 90 minutes for “Forecasting project deep work”.
+Reply “yes” and I’ll add it to your calendar.
+
+
+
+
+decision time:
+    - so every time im sending a message, do i provide my calendar to gemini?
+        - i think ideally only provide calendar to gemini when i need to
+            - how do i do that?
+                - have a prompt that categorises the type of question im asking it
+                    - am i asking for motivation
+                    - am i asking for it to add something to the calendar for me
+                - based off of this
+                    - resend another prompt
+                    - example:
+                        - if its a calendar type prompt
+                            - read my current calendar events (problem how much of the calendar event do i read)
+                            - chuck this extra info alongside my prompt
+
+
+
+1. User profile / preference memory
+2. Goal and task memory
+3. Conversation memory
+4. Behaviour / topic memory
+5. Operational memory
+
+
+
+
+i need my bot to remember our previous conversation.
+should i have a json that keeps track of our conversation but for today only.
+would this be compute or ram intensive?
+
+
+need to handle errors when gemini returns 503 error
