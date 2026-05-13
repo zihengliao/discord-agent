@@ -9,10 +9,6 @@ The purpose of this agent is to classify the type of message and request being s
 
 """
 
-# side note, i will need to add "recent memory" as well. 
-# for example, if user responds with "yes", agent needs context in regards to this response
-
-
 
 
 class Intent(str, Enum):

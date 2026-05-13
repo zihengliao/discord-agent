@@ -1,0 +1,15 @@
+{
+    "goals": [
+        {
+            "id": "goal_001",
+            "title": "Run a marathon at a 6 minute pace",
+            "status": "active",
+            "due": "17/05/2026",
+            "priority": "medium",
+            "created_at": "13/05/2026",
+            "completed_at": null,
+            "tasks": []
+        }
+    ],
+    "standalone_tasks": []
+}

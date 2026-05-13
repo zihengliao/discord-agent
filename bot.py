@@ -30,7 +30,7 @@ MODEL = "gemma-4-31b-it"
 # based on intent chuck it to the new appropriate agent
 # respond back with the appropriate agent
 intent_agent = IntentAgent(gemini_client, MODEL)
-delegator = Delegator()
+delegator = Delegator(gemini_client, MODEL)
 def respond(user_message: str) -> str:
     
     full_chat = handle_context(user_message)
@@ -52,7 +52,7 @@ def respond(user_message: str) -> str:
     for attempt in range(max_retries):
         try:
             agent = delegator.delegate(intent)
-            response = agent(gemini_client, MODEL).respond(full_chat)
+            response = agent.respond(full_chat)
             break
         except errors.ServerError as e:
             # Gemini 503 high demand / unavailable

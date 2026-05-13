@@ -36,14 +36,67 @@ decision time:
 
 
 
+goal and task agent:
+# add task
+# add goal
+# remove them if done
 
-i need my bot to remember our previous conversation.
-should i have a json that keeps track of our conversation but for today only.
-would this be compute or ram intensive?
+based on the ENUM, it should read the appropriate file
+chuck the contents of that file and my message into the AI
+spit out the new appropriate file contents
 
-- need a function that stores what i write down and what gemini writes down
-    - it needs to append to meta_data.json the day a chat happened
-    - needs to write down the actual contents in corresponding text file
-- chuck this entire context into gemini when looking for a response
+if i prompt "i finished working out, i now need to shower"
+it should add showering to my tasks and remove working out from the file
 
-need to handle errors when gemini returns 503 error
+it should then say what it has done to me the user on discord
+
+need to handle errors when gemini return some random error. 
+
+
+
+1. ChatAgent
+   - chat
+   - unknown maybe
+
+2. CoachingAgent
+   - motivation
+   - plan_day
+   - reflect
+
+3. CalendarAgent
+   - calendar_query
+   - schedule_task
+
+4. GoalTaskAgent
+   - add_goal
+   - add_task
+   - mark_task_done
+
+5. ReminderAgent
+   - create_reminder
+
+6. MemoryAgent
+   - update_memory
+
+7. OperationalAgent
+   - approval_response
+   - cancel_action
+
+
+my goal task agent needs:
+- user message
+- intent result
+- current goal/tasks file
+
+
+
+if i ask what are my goals, it uses chatagent and no goaltaskagent. but this is the json returned:
+    ("Intent JSON intent=<Intent.CHAT: 'chat'> confidence=0.95 "
+    'needs_calendar=False needs_goal_memory=True needs_task_memory=True '
+    'needs_operational_memory=False needs_conversation_history=True '
+    'updates_goal_memory=False updates_task_memory=False '
+    'updates_user_memory=False updates_reflection_memory=False '
+    'requires_approval=False needs_clarification=False clarifying_question=None '
+    'entities=IntentEntities(task_title=None, goal_title=None, date=None, '
+    'time_preference=None, duration_minutes=None, reminder_text=None, '
+    'completed_task=None)')

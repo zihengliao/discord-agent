@@ -1,55 +1,57 @@
 from intent_agent import Intent, IntentResult
 from chat_agent import ChatAgent
+from goal_task_agent import GoalTaskAgent
 
 # is this the best design pattern?
 
 class Delegator:
-    def __init__(self):
-        pass
+    def __init__(self, gemini_client, model):
+        self.client = gemini_client
+        self.model = model
 
     def delegate(self, intent_json: IntentResult):
         
         match intent_json.intent:
 
-            # for now, having everything being referred to chatagent
+            #TODO: low key should have an abstract class for all this
             case Intent.CHAT:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.MOTIVATION:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.CALENDAR_QUERY:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.SCHEDULE_TASK:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.ADD_GOAL:
-                return ChatAgent
+                return GoalTaskAgent(self.client, self.model, intent_json)
 
             case Intent.ADD_TASK:
-                return ChatAgent
+                return GoalTaskAgent(self.client, self.model, intent_json)
 
             case Intent.MARK_TASK_DONE:
-                return ChatAgent
+                return GoalTaskAgent(self.client, self.model, intent_json)
 
             case Intent.PLAN_DAY:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.REFLECT:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.CREATE_REMINDER:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.UPDATE_MEMORY:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.CANCEL_ACTION:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.APPROVAL_RESPONSE:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)
 
             case Intent.UNKNOWN:
-                return ChatAgent
+                return ChatAgent(self.client, self.model)

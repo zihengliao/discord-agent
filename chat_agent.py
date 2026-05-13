@@ -7,7 +7,7 @@ class ChatAgent:
         self.gemini_client = gemini_client
         self.model = model
 
-        with open("./personality/obama.md", "r", encoding="utf-8") as file:
+        with open("./personality/oogway.md", "r", encoding="utf-8") as file:
             self.system_prompt = file.read()
 
     def respond(self, user_message):

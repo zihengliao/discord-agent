@@ -4,7 +4,7 @@ import json
 from pprint import pprint
 
 
-AGENT = "Barack Obama"
+AGENT = "Master Oogway"
 
 
 def handle_context(user_message):
@@ -53,7 +53,6 @@ def handle_context(user_message):
         with open(META_DATA_PATH, "w", encoding="utf-8") as file:
             json.dump(meta_data, file, indent=4)
 
-    pprint(chat_history)
     return chat_history 
 
 
