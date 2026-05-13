@@ -5,7 +5,12 @@ venv
 
 notebooks/
 
+memory/chatlogs/*
+!memory/chatlogs/.gitkeep
+
 personality/
+
+!memory/profile/.gitkeep
 
 token.json
 credentials.json

@@ -41,5 +41,9 @@ i need my bot to remember our previous conversation.
 should i have a json that keeps track of our conversation but for today only.
 would this be compute or ram intensive?
 
+- need a function that stores what i write down and what gemini writes down
+    - it needs to append to meta_data.json the day a chat happened
+    - needs to write down the actual contents in corresponding text file
+- chuck this entire context into gemini when looking for a response
 
 need to handle errors when gemini returns 503 error

@@ -2,10 +2,12 @@ import discord
 import os
 from dotenv import load_dotenv
 from google import genai
+from google.genai import errors
 from delegation import Delegator
 from intent_agent import IntentAgent
 import asyncio
-
+from memory import handle_context, write_bot_response
+import time
 
 load_dotenv()
 DISCORD_BOT_TOKEN = str(os.getenv("DISCORD_BOT_TOKEN"))
@@ -20,7 +22,8 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
-MODEL = "gemini-3.1-flash-lite-preview"
+# MODEL = "gemini-3.1-flash-lite-preview"
+MODEL = "gemma-4-31b-it"
 
 
 # chuck this shit through to the intent agent
@@ -30,15 +33,48 @@ intent_agent = IntentAgent(gemini_client, MODEL)
 delegator = Delegator()
 def respond(user_message: str) -> str:
     
-    intent = intent_agent.define_intent(user_message)
-    agent = delegator.delegate(intent)
+    full_chat = handle_context(user_message)
 
-    response = agent(gemini_client, MODEL).respond(user_message)
+    max_retries=5
+    for attempt in range(max_retries):
+        try:
+            intent = intent_agent.define_intent(full_chat)
+            break
+        except errors.ServerError as e:
+            # Gemini 503 high demand / unavailable
+            if server_error_handling(attempt, max_retries):
+                break
+            # rate limiting
+            time.sleep(2)
+        except Exception as e:
+            print(f"Unexpected error: {type(e).__name__}: {e}")
+
+    for attempt in range(max_retries):
+        try:
+            agent = delegator.delegate(intent)
+            response = agent(gemini_client, MODEL).respond(full_chat)
+            break
+        except errors.ServerError as e:
+            # Gemini 503 high demand / unavailable
+            if server_error_handling(attempt, max_retries):
+                break
+            # rate limiting
+            time.sleep(2)
+        except Exception as e:
+            print(f"Unexpected error: {type(e).__name__}: {e}")
+
+    write_bot_response(response)
 
     return response
 
 
-
+def server_error_handling(attempt, max_retries):
+    print(f"Server Error, trying again")
+    if attempt == max_retries - 1:
+        print("Gemini is currently overloaded. Try again in a moment.")
+        return True
+    
+    return False
 
 
 @client.event
