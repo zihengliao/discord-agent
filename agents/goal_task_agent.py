@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, ConfigDict, ValidationError
 import json
 from pprint import pprint
 from datetime import datetime
+from .abstract_agent import AbstractAgent
 
 """
 The purpose of this agent is to decide what should happen to the user's
@@ -131,7 +132,7 @@ class GoalTaskResult(BaseModel):
     response: str = ""
 
 
-class GoalTaskAgent:
+class GoalTaskAgent(AbstractAgent):
 
     def __init__(self, gemini_client, model, intent):
         PROMPT_FILE_PATH = "./prompts/goal_task_prompt.md"
@@ -143,8 +144,10 @@ class GoalTaskAgent:
 
         self.goals_tasks_json = load_goals_data()
 
-        self.gemini_client = gemini_client
-        self.model = model
+        super().__init__(
+            gemini_client = gemini_client,
+            model = model
+        )
         self.intent_result = intent
 
     def respond(self, user_message):
@@ -388,8 +391,7 @@ class GoalTaskAgent:
         now = datetime.now()
         today = now.strftime("%d-%m-%Y")
 
-        response = self.gemini_client.models.generate_content(
-            model=self.model,
+        response = self.call_model(
             contents=f"""
                 {self.prompt_goal_task}
 
@@ -455,26 +457,3 @@ class GoalTaskAgent:
             clarifying_question=question,
             response=question,
         )
-
-    def _clean_json_output(self, text: str) -> str:
-        """
-        Handles cases where the model accidentally wraps JSON in markdown fences.
-
-        Example:
-        ```json
-        { ... }
-        ```
-        """
-
-        text = text.strip()
-
-        if text.startswith("```json"):
-            text = text.removeprefix("```json").strip()
-
-        if text.startswith("```"):
-            text = text.removeprefix("```").strip()
-
-        if text.endswith("```"):
-            text = text.removesuffix("```").strip()
-
-        return text

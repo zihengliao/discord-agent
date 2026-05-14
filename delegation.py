@@ -1,6 +1,6 @@
-from intent_agent import Intent, IntentResult
-from chat_agent import ChatAgent
-from goal_task_agent import GoalTaskAgent
+from agents.intent_agent import Intent, IntentResult
+from agents.chat_agent import ChatAgent
+from agents.goal_task_agent import GoalTaskAgent
 
 # is this the best design pattern?
 
@@ -33,6 +33,9 @@ class Delegator:
                 return GoalTaskAgent(self.client, self.model, intent_json)
 
             case Intent.MARK_TASK_DONE:
+                return GoalTaskAgent(self.client, self.model, intent_json)
+            
+            case Intent.GOAL_TASK_QUERY:
                 return GoalTaskAgent(self.client, self.model, intent_json)
 
             case Intent.PLAN_DAY:

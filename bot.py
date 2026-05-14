@@ -4,10 +4,12 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import errors
 from delegation import Delegator
-from intent_agent import IntentAgent
+from agents.intent_agent import IntentAgent
 import asyncio
 from memory import handle_context, write_bot_response
 import time
+import random
+from pprint import pprint
 
 load_dotenv()
 DISCORD_BOT_TOKEN = str(os.getenv("DISCORD_BOT_TOKEN"))
@@ -24,7 +26,9 @@ client = discord.Client(intents=intents)
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 # MODEL = "gemini-3.1-flash-lite-preview"
 MODEL = "gemma-4-31b-it"
+# MODEL = "qwen3.5:4b"
 
+get_random_value = lambda: random.randint(1, 3)
 
 # chuck this shit through to the intent agent
 # based on intent chuck it to the new appropriate agent
@@ -34,18 +38,21 @@ delegator = Delegator(gemini_client, MODEL)
 def respond(user_message: str) -> str:
     
     full_chat = handle_context(user_message)
+    pprint(full_chat)
 
     max_retries=5
     for attempt in range(max_retries):
         try:
-            intent = intent_agent.define_intent(full_chat)
+            intent = intent_agent.respond(full_chat)
+            # rate limiting
+            time.sleep(2)
             break
         except errors.ServerError as e:
             # Gemini 503 high demand / unavailable
             if server_error_handling(attempt, max_retries):
-                break
+                return f"Gemini servers are cooked. Write your message again"
             # rate limiting
-            time.sleep(2)
+            time.sleep(get_random_value())
         except Exception as e:
             print(f"Unexpected error: {type(e).__name__}: {e}")
 
@@ -57,9 +64,9 @@ def respond(user_message: str) -> str:
         except errors.ServerError as e:
             # Gemini 503 high demand / unavailable
             if server_error_handling(attempt, max_retries):
-                break
+                return f"Gemini servers are cooked. Write your message again"
             # rate limiting
-            time.sleep(2)
+            time.sleep(get_random_value())
         except Exception as e:
             print(f"Unexpected error: {type(e).__name__}: {e}")
 

@@ -8,7 +8,41 @@
             "priority": "medium",
             "created_at": "13/05/2026",
             "completed_at": null,
-            "tasks": []
+            "tasks": [
+                {
+                    "id": "task_001",
+                    "title": "carb load for the race",
+                    "status": "open",
+                    "due": null,
+                    "effort": null,
+                    "priority": "medium",
+                    "category": "project",
+                    "created_at": "13/05/2026",
+                    "completed_at": null
+                },
+                {
+                    "id": "task_002",
+                    "title": "plan race day hydration",
+                    "status": "open",
+                    "due": null,
+                    "effort": null,
+                    "priority": "medium",
+                    "category": "project",
+                    "created_at": "14/05/2026",
+                    "completed_at": null
+                },
+                {
+                    "id": "task_003",
+                    "title": "prepare running gear",
+                    "status": "open",
+                    "due": null,
+                    "effort": null,
+                    "priority": "medium",
+                    "category": "project",
+                    "created_at": "14/05/2026",
+                    "completed_at": null
+                }
+            ]
         }
     ],
     "standalone_tasks": []

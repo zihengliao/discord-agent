@@ -35,6 +35,7 @@ def handle_context(user_message):
 
     # need to include what was just said into the chatlog files
     files_to_query = [log["date"] for log in recent_logs]
+    files_to_query.reverse()
 
     write_user_message(user_message)
 

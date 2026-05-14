@@ -59,6 +59,7 @@ The initial supported intents are:
 - add_goal
 - add_task
 - mark_task_done
+- goal_task_query
 - plan_day
 - reflect
 - create_reminder
@@ -224,7 +225,32 @@ Expected output:
     requires_approval = false or true depending on confidence
 
 
-8. plan_day
+8. goal_task_query
+
+Use this when the user asks to view, list, check, review, or prioritise their
+goals or tasks.
+
+Examples:
+    "what are my goals?"
+    "show me my goals"
+    "what tasks do I have?"
+    "list my open tasks"
+    "what should I work on next?"
+    "what goals am I working on?"
+    "show my completed tasks"
+
+This requires goal/task memory because the system needs to read the stored goals
+and tasks.
+
+Expected output:
+    intent = goal_task_query
+    needs_calendar = false
+    needs_goal_memory = true
+    needs_task_memory = true
+    requires_approval = false
+
+
+9. plan_day
 
 Use this when the user wants a plan for today, tomorrow, tonight, or a broader
 period.
@@ -246,7 +272,7 @@ Expected output:
     requires_approval = false unless proposing calendar writes
 
 
-9. reflect
+10. reflect
 
 Use this when the user is reviewing their day, explaining what happened, or
 talking about missed/completed work.
@@ -268,7 +294,7 @@ Expected output:
     updates_reflection_memory = true
 
 
-10. create_reminder
+11. create_reminder
 
 Use this when the user wants to be reminded about something at a future time.
 
@@ -288,7 +314,7 @@ Expected output:
     requires_approval = false for simple reminders
 
 
-11. update_memory
+12. update_memory
 
 Use this when the user explicitly wants the bot to remember a preference,
 personal rule, or stable piece of context.
@@ -307,7 +333,7 @@ Expected output:
     requires_approval = false
 
 
-12. cancel_action
+13. cancel_action
 
 Use this when the user wants to cancel a pending action or current flow.
 
@@ -326,7 +352,7 @@ Expected output:
     requires_approval = false
 
 
-13. approval_response
+14. approval_response
 
 Use this when the user is responding to a pending action with yes/no/confirm.
 
@@ -347,7 +373,7 @@ Expected output:
     requires_approval = false
 
 
-14. unknown
+15. unknown
 
 Use this when the message is ambiguous and cannot be classified confidently.
 
@@ -468,6 +494,11 @@ Use these general rules:
     needs_goal_memory = true
     needs_task_memory = true
     updates_task_memory = true
+
+
+- goal_task_query:
+    needs_goal_memory = true
+    needs_task_memory = true
 
 - approval_response:
     needs_operational_memory = true
@@ -653,6 +684,37 @@ Output:
     "duration_minutes": null,
     "reminder_text": null,
     "completed_task": "regression section"
+  }
+}
+
+
+User:
+    "What are my goals?"
+
+Output:
+{
+  "intent": "goal_task_query",
+  "confidence": 0.97,
+  "needs_calendar": false,
+  "needs_goal_memory": true,
+  "needs_task_memory": true,
+  "needs_operational_memory": false,
+  "needs_conversation_history": false,
+  "updates_goal_memory": false,
+  "updates_task_memory": false,
+  "updates_user_memory": false,
+  "updates_reflection_memory": false,
+  "requires_approval": false,
+  "needs_clarification": false,
+  "clarifying_question": null,
+  "entities": {
+    "task_title": null,
+    "goal_title": null,
+    "date": null,
+    "time_preference": null,
+    "duration_minutes": null,
+    "reminder_text": null,
+    "completed_task": null
   }
 }
 

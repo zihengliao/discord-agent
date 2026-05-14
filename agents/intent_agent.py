@@ -3,6 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict, ValidationError
 import json
 from pprint import pprint
+from .abstract_agent import AbstractAgent
 
 """
 The purpose of this agent is to classify the type of message and request being sent.
@@ -19,6 +20,7 @@ class Intent(str, Enum):
     ADD_GOAL = "add_goal"
     ADD_TASK = "add_task"
     MARK_TASK_DONE = "mark_task_done"
+    GOAL_TASK_QUERY = "goal_task_query"
     PLAN_DAY = "plan_day"
     REFLECT = "reflect"
     CREATE_REMINDER = "create_reminder"
@@ -61,15 +63,19 @@ class IntentResult(BaseModel):
 
     entities: IntentEntities = Field(default_factory=IntentEntities)
 
-class IntentAgent:
+class IntentAgent(AbstractAgent):
 
     def __init__(self, gemini_client, model):
-        with open("intent.md", "r", encoding="utf-8") as file:
-            self.prompt_intent = file.read()
-        self.gemini_client = gemini_client
-        self.model = model
+        super().__init__(
+            gemini_client = gemini_client,
+            model = model
+        )
 
-    def define_intent(self, message):
+        with open("./prompts/intent.md", "r", encoding="utf-8") as file:
+            self.prompt_intent = file.read()
+        
+
+    def respond(self, message):
         """
         Classifies a user message and returns a validated IntentResult.
 
@@ -120,9 +126,7 @@ class IntentAgent:
     
     """
         
-        #TODO: Need to handle 503 error from models
-        response = self.gemini_client.models.generate_content(
-            model=self.model,
+        response = self.call_model(
             contents=f"""{self.prompt_intent}
 
         \n {message}"""
@@ -175,27 +179,3 @@ class IntentAgent:
             needs_clarification=True,
             clarifying_question=question,
         )
-
-    def _clean_json_output(self, text: str) -> str:
-        """
-        Handles cases where the model accidentally wraps JSON in markdown fences.
-
-        Example:
-        ```json
-        { ... }
-        ```
-        """
-
-        text = text.strip()
-
-        if text.startswith("```json"):
-            text = text.removeprefix("```json").strip()
-
-        if text.startswith("```"):
-            text = text.removeprefix("```").strip()
-
-        if text.endswith("```"):
-            text = text.removesuffix("```").strip()
-
-        return text
-
