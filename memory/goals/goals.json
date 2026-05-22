@@ -3,11 +3,11 @@
         {
             "id": "goal_001",
             "title": "Run a marathon at a 6 minute pace",
-            "status": "active",
+            "status": "completed",
             "due": "17/05/2026",
             "priority": "medium",
             "created_at": "13/05/2026",
-            "completed_at": null,
+            "completed_at": "22/05/2026",
             "tasks": [
                 {
                     "id": "task_001",

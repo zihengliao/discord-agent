@@ -46,12 +46,6 @@ class IntentResult(BaseModel):
     intent: Intent
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
 
-    needs_calendar: bool = False
-    needs_goal_memory: bool = False
-    needs_task_memory: bool = False
-    needs_operational_memory: bool = False
-    needs_conversation_history: bool = False
-
     updates_goal_memory: bool = False
     updates_task_memory: bool = False
     updates_user_memory: bool = False
@@ -71,11 +65,11 @@ class IntentAgent(AbstractAgent):
             model = model
         )
 
-        with open("./prompts/intent.md", "r", encoding="utf-8") as file:
+        with open("./prompts/intent_runtime.md", "r", encoding="utf-8") as file:
             self.prompt_intent = file.read()
         
 
-    def respond(self, message):
+    def respond(self, latest_user_message: str, operational_state: dict | None = None):
         """
         Classifies a user message and returns a validated IntentResult.
 
@@ -91,11 +85,6 @@ class IntentAgent(AbstractAgent):
                 IntentResult(
                     intent=Intent.SCHEDULE_TASK,
                     confidence=0.94,
-                    needs_calendar=True,
-                    needs_goal_memory=True,
-                    needs_task_memory=True,
-                    needs_operational_memory=False,
-                    needs_conversation_history=False,
                     updates_goal_memory=False,
                     updates_task_memory=False,
                     updates_user_memory=False,
@@ -126,10 +115,16 @@ class IntentAgent(AbstractAgent):
     
     """
         
-        response = self.call_model(
-            contents=f"""{self.prompt_intent}
+        operational_hint = ""
+        if operational_state:
+            operational_hint = f"\nMinimal operational state:\n{operational_state}"
 
-        \n {message}"""
+        response = self.call_model(
+            contents=(
+                f"{self.prompt_intent}\n\n"
+                f"Latest user message:\n{latest_user_message}"
+                f"{operational_hint}"
+            )
         )
 
         intent_json = self.validate_schema(response.text)

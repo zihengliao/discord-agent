@@ -6,7 +6,8 @@ from google.genai import errors
 from delegation import Delegator
 from agents.intent_agent import IntentAgent
 import asyncio
-from memory import handle_context, write_bot_response
+from memory import get_operational_memory, write_bot_response, write_user_message
+from context_flow import get_context_types, load_context
 import time
 import random
 from pprint import pprint
@@ -36,14 +37,20 @@ get_random_value = lambda: random.randint(1, 3)
 intent_agent = IntentAgent(gemini_client, MODEL)
 delegator = Delegator(gemini_client, MODEL)
 def respond(user_message: str) -> str:
-    
-    full_chat = handle_context(user_message)
-    pprint(full_chat)
+    write_user_message(user_message)
+    operational_state = get_operational_memory()
 
     max_retries=5
     for attempt in range(max_retries):
         try:
-            intent = intent_agent.respond(full_chat)
+            router_started = time.perf_counter()
+            intent = intent_agent.respond(user_message, operational_state=operational_state)
+            router_elapsed_ms = (time.perf_counter() - router_started) * 1000
+            router_prompt_chars = len(user_message) + len(intent_agent.prompt_intent)
+            print(
+                f"router metrics: prompt_chars~{router_prompt_chars}, "
+                f"latency_ms={router_elapsed_ms:.1f}"
+            )
             # rate limiting
             time.sleep(2)
             break
@@ -58,8 +65,10 @@ def respond(user_message: str) -> str:
 
     for attempt in range(max_retries):
         try:
-            agent = delegator.delegate(intent)
-            response = agent.respond(full_chat)
+            context_types = get_context_types(intent, user_message)
+            context = load_context(context_types)
+            agent = delegator.delegate(intent, context)
+            response = agent.respond(user_message, context)
             break
         except errors.ServerError as e:
             # Gemini 503 high demand / unavailable

@@ -9,7 +9,7 @@ class Delegator:
         self.client = gemini_client
         self.model = model
 
-    def delegate(self, intent_json: IntentResult):
+    def delegate(self, intent_json: IntentResult, context):
         
         match intent_json.intent:
 
@@ -27,16 +27,16 @@ class Delegator:
                 return ChatAgent(self.client, self.model)
 
             case Intent.ADD_GOAL:
-                return GoalTaskAgent(self.client, self.model, intent_json)
+                return GoalTaskAgent(self.client, self.model, intent_json, context)
 
             case Intent.ADD_TASK:
-                return GoalTaskAgent(self.client, self.model, intent_json)
+                return GoalTaskAgent(self.client, self.model, intent_json, context)
 
             case Intent.MARK_TASK_DONE:
-                return GoalTaskAgent(self.client, self.model, intent_json)
+                return GoalTaskAgent(self.client, self.model, intent_json, context)
             
             case Intent.GOAL_TASK_QUERY:
-                return GoalTaskAgent(self.client, self.model, intent_json)
+                return GoalTaskAgent(self.client, self.model, intent_json, context)
 
             case Intent.PLAN_DAY:
                 return ChatAgent(self.client, self.model)

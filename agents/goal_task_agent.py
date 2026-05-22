@@ -134,7 +134,7 @@ class GoalTaskResult(BaseModel):
 
 class GoalTaskAgent(AbstractAgent):
 
-    def __init__(self, gemini_client, model, intent):
+    def __init__(self, gemini_client, model, intent, context: dict):
         PROMPT_FILE_PATH = "./prompts/goal_task_prompt.md"
 
         with open(PROMPT_FILE_PATH, "r", encoding="utf-8") as file:
@@ -142,7 +142,7 @@ class GoalTaskAgent(AbstractAgent):
 
         # TODO: separate the goal_task files into goals and tasks
 
-        self.goals_tasks_json = load_goals_data()
+        self.goals_tasks_json = context.get("goal_tasks") or load_goals_data()
 
         super().__init__(
             gemini_client = gemini_client,
@@ -150,7 +150,7 @@ class GoalTaskAgent(AbstractAgent):
         )
         self.intent_result = intent
 
-    def respond(self, user_message):
+    def respond(self, user_message, context: dict | None = None):
 
         """
         Example of JSON file structure:

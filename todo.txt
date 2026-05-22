@@ -90,13 +90,28 @@ my goal task agent needs:
 
 
 
-if i ask what are my goals, it uses chatagent and no goaltaskagent. but this is the json returned:
-    ("Intent JSON intent=<Intent.CHAT: 'chat'> confidence=0.95 "
-    'needs_calendar=False needs_goal_memory=True needs_task_memory=True '
-    'needs_operational_memory=False needs_conversation_history=True '
-    'updates_goal_memory=False updates_task_memory=False '
-    'updates_user_memory=False updates_reflection_memory=False '
-    'requires_approval=False needs_clarification=False clarifying_question=None '
-    'entities=IntentEntities(task_title=None, goal_title=None, date=None, '
-    'time_preference=None, duration_minutes=None, reminder_text=None, '
-    'completed_task=None)')
+the problem im facing now:
+
+- im chucking in too much context into my llm
+- codex is trying to solve that right now through a context flow
+- intenAgent will only get the users current message as well as the operational state
+   - things like (yes, no, cancel that)
+- based on this it will route to the appropriate agent as well as provide memory 
+   that is absolutely needed by the specialist agent
+
+We split memory into three different types:
+
+  1. rolling user profile
+      - compact, stable facts and preferences
+      - useful for personalization
+  2. daily summaries
+      - recent episodic memory
+      - useful for questions about prior days or ongoing threads
+  3. recent turns
+      - a tiny short-term window
+      - useful for pronouns, approvals, and follow-ups
+
+  The key rule was:
+
+  - do not include all three by default
+  - load them selectively depending on the request
