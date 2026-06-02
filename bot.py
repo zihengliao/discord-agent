@@ -11,6 +11,8 @@ from context_flow import get_context_types, load_context
 import time
 import random
 from pprint import pprint
+from datetime import timedelta
+
 
 load_dotenv()
 DISCORD_BOT_TOKEN = str(os.getenv("DISCORD_BOT_TOKEN"))
@@ -97,6 +99,59 @@ def server_error_handling(attempt, max_retries):
 async def on_ready():
     owner = await client.fetch_user(OWNER_DISCORD_ID)
     print(f"Logged in as {client.user}")
+
+    # adding a poll during startup for testing
+    global startup_poll_message
+
+    owner = await client.fetch_user(OWNER_DISCORD_ID)
+
+    poll = discord.Poll(
+        question="What should we do?",
+        duration=timedelta(hours=24),
+        multiple=True,
+    )
+
+    poll.add_answer(text="Option 1")
+    poll.add_answer(text="Option 2")
+    poll.add_answer(text="Option 3")
+
+    startup_poll_message = await owner.send(poll=poll)
+
+@client.event
+async def on_raw_poll_vote_add(payload):
+    if startup_poll_message is None:
+        return
+
+    if payload.message_id != startup_poll_message.id:
+        return
+
+    refreshed_message = await startup_poll_message.fetch()
+    answer = refreshed_message.poll.get_answer(payload.answer_id)
+
+    print(f"User {payload.user_id} selected: {answer.text}")
+    await print_poll_results()
+
+
+@client.event
+async def on_raw_poll_vote_remove(payload):
+    if startup_poll_message is None:
+        return
+
+    if payload.message_id != startup_poll_message.id:
+        return
+
+    refreshed_message = await startup_poll_message.fetch()
+    answer = refreshed_message.poll.get_answer(payload.answer_id)
+
+    print(f"User {payload.user_id} removed their vote from: {answer.text}")
+    
+
+async def print_poll_results():
+    refreshed_message = await startup_poll_message.fetch()
+
+    for answer in refreshed_message.poll.answers:
+        async for voter in answer.voters():
+            print(f"{voter} selected: {answer.text}")
 
 
 @client.event

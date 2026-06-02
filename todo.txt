@@ -127,7 +127,12 @@ We split memory into three different types:
 30/05/2026
 
 current real todo:
-- write down a requirements.txt
-- if i complete a goal, the tasks linked to that goal should also be completed
+- if i complete a goal, the tasks linked to that goal should also be completed?
+   - you need to ask the user by putting up a poll for the user to tick off 
+      what tasks have been completed
+   - based on that poll, you should then tick off the tasks in the json
+   
 - a fitness agent?
    - will most likely need to build "operational memory" (basically yes, no responses to questions)
+
+
