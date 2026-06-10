@@ -6,6 +6,8 @@ import json
 from pprint import pprint
 from datetime import datetime
 from .abstract_agent import AbstractAgent
+import discord
+from datetime import timedelta
 
 """
 The purpose of this agent is to decide what should happen to the user's
@@ -243,6 +245,24 @@ class GoalTaskAgent(AbstractAgent):
 
         data = self.goals_tasks_json
 
+        # this can either be for goals or tasks
+        # should think of a more elegant solution to distinguish between
+        # goal and task
+        def list_goal_task(goals_or_tasks: list[str]):
+            """
+            Function that uses discord polls to list goals and tasks
+            """
+            poll = discord.Poll(
+                question="What should we do?",
+                duration=timedelta(hours=12),
+                multiple=True,
+            )
+
+            for goal_or_task in goals_or_tasks:
+                poll.add_answer(text = goal_or_task)
+
+            return poll
+
         if action == GoalTaskAction.ADD_GOAL:
             new_goal = {
                 "id": generate_next_goal_id(data),
@@ -339,16 +359,19 @@ class GoalTaskAgent(AbstractAgent):
         if action == GoalTaskAction.CLARIFY:
             return action_result.clarifying_question or "Can you clarify what you want me to do?"
 
+
         if action == GoalTaskAction.NO_ACTION:
             return action_result.response or "No action taken."
-
+        
+##TODO need to figure out how the return returns polls instead of strings
         if action == GoalTaskAction.LIST_GOALS:
             active_goals = [goal for goal in data["goals"] if goal["status"] == "active"]
 
             if not active_goals:
                 return "You do not have any active goals."
+            
+            return list_goal_task([goal["title"] for goal in active_goals])
 
-            return "\n".join([f"- {goal['title']}" for goal in active_goals])
 
         if action == GoalTaskAction.LIST_TASKS:
             open_tasks = []
@@ -356,16 +379,16 @@ class GoalTaskAgent(AbstractAgent):
             for goal in data["goals"]:
                 for task in goal.get("tasks", []):
                     if task["status"] == "open":
-                        open_tasks.append(f"- {task['title']} ({goal['title']})")
+                        open_tasks.append(task['title'])
 
             for task in data["standalone_tasks"]:
                 if task["status"] == "open":
-                    open_tasks.append(f"- {task['title']}")
+                    open_tasks.append(task['title'])
 
             if not open_tasks:
                 return "You do not have any open tasks."
 
-            return "\n".join(open_tasks)
+            return list_goal_task(open_tasks)
 
         if action == GoalTaskAction.PRIORITISE_TASKS:
             return action_result.response

@@ -121,7 +121,8 @@ We split memory into three different types:
 
 
 
-
+shitty coding practice:
+- having if statement to differentiate between str and poll type
 
 
 30/05/2026
@@ -131,8 +132,9 @@ current real todo:
    - you need to ask the user by putting up a poll for the user to tick off 
       what tasks have been completed
    - based on that poll, you should then tick off the tasks in the json
-   
+
 - a fitness agent?
    - will most likely need to build "operational memory" (basically yes, no responses to questions)
 
 
+when ticking a completed task, it should set it to be completed in the backend json

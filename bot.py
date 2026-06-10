@@ -25,6 +25,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
+active_poll_message = None
 
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 # MODEL = "gemini-3.1-flash-lite-preview"
@@ -81,6 +82,7 @@ def respond(user_message: str) -> str:
         except Exception as e:
             print(f"Unexpected error: {type(e).__name__}: {e}")
 
+    # BUG this could be a problem if response is a poll type
     write_bot_response(response)
 
     return response
@@ -97,35 +99,18 @@ def server_error_handling(attempt, max_retries):
 
 @client.event
 async def on_ready():
-    owner = await client.fetch_user(OWNER_DISCORD_ID)
     print(f"Logged in as {client.user}")
 
-    # adding a poll during startup for testing
-    global startup_poll_message
-
-    owner = await client.fetch_user(OWNER_DISCORD_ID)
-
-    poll = discord.Poll(
-        question="What should we do?",
-        duration=timedelta(hours=24),
-        multiple=True,
-    )
-
-    poll.add_answer(text="Option 1")
-    poll.add_answer(text="Option 2")
-    poll.add_answer(text="Option 3")
-
-    startup_poll_message = await owner.send(poll=poll)
 
 @client.event
 async def on_raw_poll_vote_add(payload):
-    if startup_poll_message is None:
+    if active_poll_message is None:
         return
 
-    if payload.message_id != startup_poll_message.id:
+    if payload.message_id != active_poll_message.id:
         return
 
-    refreshed_message = await startup_poll_message.fetch()
+    refreshed_message = await active_poll_message.fetch()
     answer = refreshed_message.poll.get_answer(payload.answer_id)
 
     print(f"User {payload.user_id} selected: {answer.text}")
@@ -134,20 +119,20 @@ async def on_raw_poll_vote_add(payload):
 
 @client.event
 async def on_raw_poll_vote_remove(payload):
-    if startup_poll_message is None:
+    if active_poll_message is None:
         return
 
-    if payload.message_id != startup_poll_message.id:
+    if payload.message_id != active_poll_message.id:
         return
 
-    refreshed_message = await startup_poll_message.fetch()
+    refreshed_message = await active_poll_message.fetch()
     answer = refreshed_message.poll.get_answer(payload.answer_id)
 
     print(f"User {payload.user_id} removed their vote from: {answer.text}")
     
 
 async def print_poll_results():
-    refreshed_message = await startup_poll_message.fetch()
+    refreshed_message = await active_poll_message.fetch()
 
     for answer in refreshed_message.poll.answers:
         async for voter in answer.voters():
@@ -176,12 +161,15 @@ async def on_message(message):
         await client.close()
         return
 
-
+    # response can be a string or a poll
     response = await asyncio.to_thread(respond, user_message)
 
+    global active_poll_message
     
-    # Respond back in Discord
-    await message.channel.send(f"{response}")
-
+    # don't know a better way to do this
+    if isinstance(response, discord.Poll):
+      active_poll_message = await message.channel.send(poll=response)
+    else:
+        await message.channel.send(f"{response}")
 
 client.run(DISCORD_BOT_TOKEN)
